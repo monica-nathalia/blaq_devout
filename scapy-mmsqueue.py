@@ -26,30 +26,41 @@ import os, sys, argparse, struct, binascii
 import datetime, ctypes, random
 from time import sleep
 from time import time as ts
+# scapy used from 'pip install scapy-python3'
 from scapy import all as scapy_all
 from scapy.layers.inet import IP
 from scapy.layers.inet import UDP
 from scapy.all import *
-import cip,enip_tcp
+# import cip,enip_tcp
 
 def __extract(packet):
+    print('extracting')
 
     pkt = IP(packet.get_payload())
+    if 'stVal' in str(pkt.build()):
+        print('stval here')
+        print(pkt)
+        for i in range(len(pkt.build())):
+            print(i, hex(pkt.build()[i]))
+    # elif 'ctlVal' in str(pkt.build()):
+    #     pkt.show()
+    # elif 'Oper' in str(pkt.build()):
+    #     pkt.show()
        
-    if (str(pkt.src) == '192.168.1.10' and str(pkt.dst) == '192.168.1.100' ):
-        pkt.show()
+    # if (str(pkt.src) == '192.168.1.10' and str(pkt.dst) == '192.168.1.100' ):
+    #     pkt.show()
 
-        if pkt[SWAT_P1_ALL].P101_cmd == 1:
-            pkt[SWAT_P1_ALL].P101_cmd = 2
-            pkt[SWAT_P1_ALL].P101_status = 2
-        else:
-            pkt[SWAT_P1_ALL].P101_cmd = 1
-            pkt[SWAT_P1_ALL].P101_status = 1
+    #     if pkt[SWAT_P1_ALL].P101_cmd == 1:
+    #         pkt[SWAT_P1_ALL].P101_cmd = 2
+    #         pkt[SWAT_P1_ALL].P101_status = 2
+    #     else:
+    #         pkt[SWAT_P1_ALL].P101_cmd = 1
+    #         pkt[SWAT_P1_ALL].P101_status = 1
 
-        del pkt[TCP].chksum  # Need to recompute checksum
-        del pkt[IP].chksum
-        pkt.show2()
-        packet.set_payload(str(pkt))
+        # del pkt[TCP].chksum  # Need to recompute checksum
+    #     del pkt[IP].chksum
+    #     pkt.show2()
+    #     packet.set_payload(str(pkt))
             
          
     # then, let the netfilterqueue forward the packet   
@@ -57,9 +68,9 @@ def __extract(packet):
 
 
         
-def start():
+def start(source_interface):
     __setdown()
-    __setup()
+    __setup(source_interface)
     nfqueue = NetfilterQueue()
     nfqueue.bind(1, __extract)
    
@@ -72,8 +83,12 @@ def start():
         nfqueue.unbind()  
     return 1
 
-def __setup():
-    os.system('iptables -A FORWARD -p tcp -m physdev --physdev-in enp0s8 -j NFQUEUE --queue-num 1')
+def __setup(source_interface):
+    print('setting up with physdev-in '+source_interface)
+    # os.system('iptables -A FORWARD -p tcp -m physdev --physdev-in ' + 
+    #            source_interface + ' -j NFQUEUE --queue-num 1')
+    os.system('iptables -A FORWARD -m physdev --physdev-in ' + 
+               source_interface + ' -j NFQUEUE --queue-num 1')
     toggle_flag = False
 
 
@@ -83,5 +98,6 @@ def __setdown():
 
 
 if __name__ == '__main__':
-    start()
+    argg = sys.argv[1]
+    start(argg)
     

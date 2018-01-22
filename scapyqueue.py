@@ -36,8 +36,8 @@ def __extract(packet):
 
     pkt = IP(packet.get_payload())
        
-    if (str(pkt.src) == '192.168.1.10' and str(pkt.dst) == '192.168.1.100' ):
-        pkt.show()
+    # if (str(pkt.src) == '192.168.1.10' and str(pkt.dst) == '192.168.1.100' ):
+    pkt.show()
 
         if pkt[SWAT_P1_ALL].P101_cmd == 1:
             pkt[SWAT_P1_ALL].P101_cmd = 2
