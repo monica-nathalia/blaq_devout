@@ -4,7 +4,7 @@ import hexdump
 from scapy.all import *
 from scapy.utils import rdpcap
 
-pkts = rdpcap('samples.pcap')
+pkts = rdpcap('samples4.pcap')
 
 counter = 0
 
@@ -14,7 +14,7 @@ def expand(x):
 		x = x.payload
 		yield x.name
 
-for pkt in pkts[:5]:
+for pkt in pkts[:1]:
 	np = pkt.payload
 	# print(b'\x73\x74\x56\x61\x6c'.decode())
 	print(list(expand(pkt)))
@@ -25,9 +25,11 @@ for pkt in pkts[:5]:
 	try:
 		if IP in pkt:
 			# print(np)
+			np.show()
 			np[IP].dst = '10.0.0.3'
 			np[IP].src = '10.0.0.2'
 			del np[IP].chksum
+			np.show2()
 			send(np)
 			counter += 1
 			print ('packet no: %d' %counter)
